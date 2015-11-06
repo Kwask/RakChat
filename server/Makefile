@@ -1,7 +1,7 @@
 CXX = g++
 CFLAGS = -std=c++11 -g -m64
 LINK = -pthread 
-FILES = main.cpp ../raknet/*.cpp
+FILES = main.cpp ../raknet/*.cpp ../_defines.cpp
 BIN = server.out
 
 OBJS = *.o

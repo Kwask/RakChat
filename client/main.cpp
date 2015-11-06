@@ -4,15 +4,9 @@
 #include <raknet/MessageIdentifiers.h>
 #include <raknet/BitStream.h>
 #include <raknet/RakNetTypes.h>  // MessageID
+#include "../_defines.cpp"
 
-#define SERVER_PORT 7777
-
-enum GameMessages
-{
-	ID_GAME_MESSAGE_1=ID_USER_PACKET_ENUM+1
-};
-
-void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer )
+void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer, std::string username )
 {
 	switch( packet->data[0] )
 	{
@@ -31,10 +25,11 @@ void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer )
 
 				// Use a BitStream to write a custom user message
 				// Bitstreams are easier to use than sending casted structures, and handle endian swapping automatically
-				RakNet::BitStream bsOut;
-				bsOut.Write(( RakNet::MessageID )ID_GAME_MESSAGE_1 );
-				bsOut.Write( "Hello world" );
-				peer->Send( &bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false );
+				std::string message = username + " has connected.";
+				RakNet::BitStream bs;
+				bs.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
+				bs.Write( message.c_str() );
+				peer->Send( &bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false );
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -46,7 +41,7 @@ void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer )
 		case ID_CONNECTION_LOST:
 			printf( "Connection lost.\n" );
 			break;
-		case ID_GAME_MESSAGE_1:
+		case ID_GAME_MESSAGE:
 			{
 				RakNet::RakString rs;
 				RakNet::BitStream bsIn( packet->data, packet->length, false );
@@ -64,6 +59,7 @@ void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer )
 int main(void)
 {
 	std::string input;
+	std::string username;
 
 	RakNet::RakPeerInterface *peer = RakNet::RakPeerInterface::GetInstance();
 	RakNet::Packet *packet;
@@ -82,12 +78,28 @@ int main(void)
 	printf( "Starting the client.\n" );
 	peer->Connect( input.c_str(), SERVER_PORT, 0, 0 );
 
+	printf( "Enter a username\n" );
+	std::getline( std::cin, username );
+
 	while (1)
 	{
 		for( packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive() )
 		{
-			handlePacket( packet, peer );
+			handlePacket( packet, peer, username );
 		}
+
+		std::string input;
+
+		getline( std::cin, input );
+		
+		std::string message = username + ": " + input;
+
+		RakNet::BitStream bs;
+		bs.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
+		bs.Write( message.c_str() );
+		
+		peer->Send( &bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true );
+
 	}
 
 	RakNet::RakPeerInterface::DestroyInstance( peer );
