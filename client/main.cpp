@@ -1,9 +1,10 @@
 #include <iostream>
 #include <string.h>
-#include <raknet/RakPeerInterface.h>
-#include <raknet/MessageIdentifiers.h>
-#include <raknet/BitStream.h>
-#include <raknet/RakNetTypes.h>  // MessageID
+#include <thread>
+#include "../raknet/RakPeerInterface.h"
+#include "../raknet/MessageIdentifiers.h"
+#include "../raknet/BitStream.h"
+#include "../raknet/RakNetTypes.h"  // MessageID
 #include "../_defines.cpp"
 
 void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer, std::string username )
@@ -56,6 +57,24 @@ void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer, std::
 	}
 }
 
+void userInput( RakNet::RakPeerInterface* peer, std::string username )
+{
+	while( true )
+	{
+		std::string input;
+
+		getline( std::cin, input );
+		
+		std::string message = username + ": " + input;
+
+		RakNet::BitStream bs;
+		bs.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
+		bs.Write( message.c_str() );
+		
+		peer->Send( &bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true );
+	}
+}
+
 int main(void)
 {
 	std::string input;
@@ -81,26 +100,17 @@ int main(void)
 	printf( "Enter a username\n" );
 	std::getline( std::cin, username );
 
-	while (1)
+	std::thread chat( userInput, peer, username );
+
+	while( true )
 	{
 		for( packet=peer->Receive(); packet; peer->DeallocatePacket(packet), packet=peer->Receive() )
 		{
 			handlePacket( packet, peer, username );
 		}
-
-		std::string input;
-
-		getline( std::cin, input );
-		
-		std::string message = username + ": " + input;
-
-		RakNet::BitStream bs;
-		bs.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
-		bs.Write( message.c_str() );
-		
-		peer->Send( &bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true );
-
 	}
+
+	chat.join();
 
 	RakNet::RakPeerInterface::DestroyInstance( peer );
 

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <string.h>
-#include <raknet/RakPeerInterface.h>
-#include <raknet/MessageIdentifiers.h>
-#include <raknet/BitStream.h>
-#include <raknet/RakNetTypes.h>  // MessageID
+#include "../raknet/RakPeerInterface.h"
+#include "../raknet/MessageIdentifiers.h"
+#include "../raknet/BitStream.h"
+#include "../raknet/RakNetTypes.h"  // MessageID
 #include "../_defines.cpp"
 
 void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer )
