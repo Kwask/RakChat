@@ -7,6 +7,14 @@
 #include "../raknet/RakNetTypes.h"  // MessageID
 #include "../_defines.cpp"
 
+void sendRakMessage( std::string message, RakNet::RakPeerInterface* peer, RakNet::SystemAddress address = RakNet::UNASSIGNED_SYSTEM_ADDRESS )
+{
+	RakNet::BitStream outgoing;
+	outgoing.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
+	outgoing.Write( message.c_str() );
+	peer->Send( &outgoing, HIGH_PRIORITY, RELIABLE_ORDERED, 0, address, true );
+}
+
 void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer, std::string username )
 {
 	switch( packet->data[0] )
@@ -27,10 +35,7 @@ void handlePacket( RakNet::Packet* packet, RakNet::RakPeerInterface* peer, std::
 				// Use a BitStream to write a custom user message
 				// Bitstreams are easier to use than sending casted structures, and handle endian swapping automatically
 				std::string message = username + " has connected.";
-				RakNet::BitStream bs;
-				bs.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
-				bs.Write( message.c_str() );
-				peer->Send( &bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, packet->systemAddress, false );
+				sendRakMessage( message, peer );
 			}
 			break;
 		case ID_NO_FREE_INCOMING_CONNECTIONS:
@@ -66,12 +71,7 @@ void userInput( RakNet::RakPeerInterface* peer, std::string username )
 		getline( std::cin, input );
 		
 		std::string message = username + ": " + input;
-
-		RakNet::BitStream bs;
-		bs.Write(( RakNet::MessageID )ID_GAME_MESSAGE );
-		bs.Write( message.c_str() );
-		
-		peer->Send( &bs, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true );
+		sendRakMessage( message, peer );
 	}
 }
 
