@@ -1,3 +1,6 @@
+#ifndef DEFINES_H
+#define DEFINES_H
+
 #include "raknet/MessageIdentifiers.h"
 
 #define MAX_CLIENTS 10
@@ -7,3 +10,5 @@ enum GameMessages
 {
 	ID_GAME_MESSAGE=ID_USER_PACKET_ENUM+1
 };
+
+#endif

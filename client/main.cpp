@@ -1,11 +1,11 @@
 #include <iostream>
 #include <string.h>
 #include <thread>
-#include "../raknet/RakPeerInterface.h"
-#include "../raknet/MessageIdentifiers.h"
-#include "../raknet/BitStream.h"
-#include "../raknet/RakNetTypes.h"  // MessageID
-#include "../_defines.cpp"
+#include "raknet/RakPeerInterface.h"
+#include "raknet/MessageIdentifiers.h"
+#include "raknet/BitStream.h"
+#include "raknet/RakNetTypes.h"  // MessageID
+#include "_defines.h"
 
 void sendRakMessage( std::string message, RakNet::RakPeerInterface* peer, RakNet::SystemAddress address = RakNet::UNASSIGNED_SYSTEM_ADDRESS )
 {
@@ -69,7 +69,7 @@ void userInput( RakNet::RakPeerInterface* peer, std::string username )
 		std::string input;
 
 		getline( std::cin, input );
-		
+
 		std::string message = username + ": " + input;
 		sendRakMessage( message, peer );
 	}
